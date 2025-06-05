@@ -472,4 +472,28 @@ mod tests {
         store.delete_all_entries().await.unwrap();
         assert!(store.current_entry.is_none());
     }
+
+    #[tokio::test]
+    async fn test_new_entry_from_existing() {
+        let dir = make_temp_dir();
+        let mut store = RecordingStore::create(dir.path()).await.unwrap();
+
+        let _ = store.new_entry().await;
+        assert!(store.current_entry.is_some());
+        assert_eq!(store.current_entry.unwrap(), 0);
+        assert_eq!(store.manifest.entries.len(), 1);
+        let og_entry_manifest = &store.manifest.entries[store.current_entry.unwrap()].clone();
+        
+        let _ = store.new_entry_from_existing(og_entry_manifest.name.clone()).await;
+        assert_eq!(store.current_entry.unwrap(), 1);
+        assert_eq!(store.manifest.entries.len(), 2);
+
+        let new_entry_manifst = &store.manifest.entries[store.current_entry.unwrap()].clone();
+
+        assert_eq!(og_entry_manifest.name, new_entry_manifst.name);
+        assert_eq!(og_entry_manifest.start_time.timestamp(), new_entry_manifst.start_time.timestamp());
+        assert_eq!(og_entry_manifest.analysis_size_bytes, new_entry_manifst.analysis_size_bytes);
+        assert_eq!(og_entry_manifest.qmdl_size_bytes, new_entry_manifst.qmdl_size_bytes);
+        
+    }
 }
