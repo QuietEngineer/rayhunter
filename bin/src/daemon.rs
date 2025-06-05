@@ -33,8 +33,8 @@ use qmdl_store::RecordingStoreError;
 use rayhunter::diag_device::DiagDevice;
 use stats::get_qmdl_manifest;
 use std::net::SocketAddr;
-use std::sync::Arc;
 use std::path::Path;
+use std::sync::Arc;
 use tokio::fs;
 use tokio::net::TcpListener;
 use tokio::sync::mpsc::{self, Sender};
@@ -123,9 +123,11 @@ async fn init_qmdl_store(config: &config::Config) -> Result<RecordingStore, Rayh
                     if file_name_str.ends_with(".qmdl") {
                         let name = file_name_str.trim_end_matches(".qmdl");
                         info!("making entry for {}", name);
-                        recording_store.new_entry_from_existing(name.to_string()).await?;
+                        recording_store
+                            .new_entry_from_existing(name.to_string())
+                            .await?;
                     }
-                }            
+                }
 
                 Ok(recording_store)
             }
