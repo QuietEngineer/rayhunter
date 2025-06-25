@@ -5,5 +5,6 @@ pub mod imsi_requested;
 pub mod imsi_requested_v2;
 pub mod information_element;
 pub mod null_cipher;
+pub mod nas_null_cipher;
 pub mod priority_2g_downgrade;
 pub mod util;
