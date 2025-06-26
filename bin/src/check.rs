@@ -16,11 +16,11 @@ mod dummy_analyzer;
 #[derive(Parser, Debug)]
 #[command(version, about)]
 struct Args {
-    #[arg(short = 'p', long)]
+    #[arg(short = 'q', long)]
     qmdl_path: PathBuf,
 
     #[arg(short = 'c', long)]
-    pcapify: bool,
+    create_pcap: bool,
 
     #[arg(long)]
     show_skipped: bool,
@@ -28,8 +28,11 @@ struct Args {
     #[arg(long)]
     enable_dummy_analyzer: bool,
 
+    #[arg(short = 'Q', long)]
+    quiet: bool,
+
     #[arg(short, long)]
-    verbose: bool,
+    debug: bool,
 }
 
 async fn analyze_file(enable_dummy_analyzer: bool, qmdl_path: &str, show_skipped: bool) {
@@ -128,10 +131,12 @@ async fn pcapify(qmdl_path: &PathBuf) {
 #[tokio::main]
 async fn main() {
     let args = Args::parse();
-    let level = if args.verbose {
+    let level = if args.quiet {
+        log::LevelFilter::Warn
+    } else if args.debug {
         log::LevelFilter::Trace
     } else {
-        log::LevelFilter::Warn
+        log::LevelFilter::Info
     };
     simple_logger::SimpleLogger::new()
         .with_colors(true)
@@ -163,7 +168,7 @@ async fn main() {
                 let path = entry.path();
                 let path_str = path.to_str().unwrap();
                 analyze_file(args.enable_dummy_analyzer, path_str, args.show_skipped).await;
-                if args.pcapify {
+                if args.create_pcap {
                     pcapify(&path).await;
                 }
             }
@@ -171,7 +176,7 @@ async fn main() {
     } else {
         let path = args.qmdl_path.to_str().unwrap();
         analyze_file(args.enable_dummy_analyzer, path, args.show_skipped).await;
-        if args.pcapify {
+        if args.create_pcap {
             pcapify(&args.qmdl_path).await;
         }
     }
